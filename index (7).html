@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Plax Group — Generatore Firma Aziendale</title>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --plax-blue: #1a3f6f;
+      --plax-blue-dark: #122d52;
+      --plax-yellow: #fdc400;
+      --bg: #f0f2f5;
+      --card-bg: #ffffff;
+      --text: #1a1a2e;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(26,63,111,0.10);
+    }
+
+    body {
+      font-family: 'Assistant', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .header { text-align: center; margin-bottom: 2rem; }
+    .header .logo-text {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--plax-blue); margin-bottom: 0.5rem;
+    }
+    .header h1 { font-size: 26px; font-weight: 700; color: var(--text); line-height: 1.2; }
+    .header p  { font-size: 14px; color: var(--text-muted); margin-top: 0.4rem; }
+
+    /* ── VISTA FORM ── */
+    #view-form { width: 100%; max-width: 680px; }
+    .form-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      border: 1px solid var(--border); padding: 2rem; box-shadow: var(--shadow);
+    }
+    .form-card h2 {
+      font-size: 16px; font-weight: 700; color: var(--plax-blue);
+      margin-bottom: 1.5rem; padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--plax-yellow); display: inline-block;
+    }
+    .zoho-iframe {
+      width: 100%; border: none; min-height: 540px; display: block;
+    }
+
+    /* ── VISTA DOWNLOAD ── */
+    #view-download {
+      display: none; width: 100%; max-width: 620px; text-align: center;
+    }
+    .download-card {
+      background: var(--card-bg); border-radius: var(--radius);
+      border: 1px solid var(--border); padding: 2.5rem 2rem; box-shadow: var(--shadow);
+    }
+    .download-icon { font-size: 52px; margin-bottom: 1rem; }
+    .download-card h2 {
+      font-size: 22px; font-weight: 700; color: var(--plax-blue); margin-bottom: 0.4rem;
+    }
+    .download-card .subtitle {
+      font-size: 14px; color: var(--text-muted); margin-bottom: 1.5rem;
+    }
+
+    .user-info {
+      background: #f0f4ff; border-radius: 8px;
+      padding: 1rem 1.25rem; margin-bottom: 1.5rem; text-align: left;
+    }
+    .user-info div { font-size: 13px; color: var(--text); margin-bottom: 3px; line-height: 1.5; }
+    .user-info div:last-child { margin-bottom: 0; }
+    .user-info strong { color: var(--plax-blue); min-width: 60px; display: inline-block; }
+
+    .preview-wrap {
+      margin-bottom: 1.5rem; border-radius: 8px; overflow: hidden;
+      border: 1px solid var(--border); background: #e8ecf0;
+    }
+    canvas#preview { width: 100%; height: auto; display: block; }
+
+    .btn-download {
+      display: block; width: 100%; padding: 13px;
+      background: var(--plax-blue); color: #fff;
+      font-family: 'Assistant', sans-serif; font-size: 15px; font-weight: 700;
+      border: none; border-radius: 8px; cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      margin-bottom: 0.75rem; letter-spacing: 0.02em;
+    }
+    .btn-download:hover { background: var(--plax-blue-dark); }
+    .btn-download:active { transform: scale(0.98); }
+    .btn-download.loading { opacity: 0.7; pointer-events: none; }
+
+    .btn-new {
+      display: block; width: 100%; padding: 10px;
+      background: transparent; color: var(--text-muted);
+      font-family: 'Assistant', sans-serif; font-size: 13px;
+      border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-new:hover { border-color: var(--plax-blue); color: var(--plax-blue); }
+
+    .auto-badge {
+      display: inline-block; background: #e8f5e9; color: #2e7d32;
+      border: 1px solid #a5d6a7; border-radius: 20px;
+      font-size: 11px; font-weight: 600; padding: 3px 10px;
+      margin-bottom: 1.25rem;
+    }
+
+    .footer { margin-top: 2rem; font-size: 12px; color: var(--text-muted); text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo-text">Plax Group</div>
+    <h1 id="page-title">Generatore Firma Aziendale</h1>
+    <p id="page-sub">Compila il modulo per ricevere la tua firma personalizzata</p>
+  </div>
+
+  <!-- ══ VISTA 1: FORM ZOHO EMBEDDED ══ -->
+  <div id="view-form">
+    <div class="form-card">
+      <h2>Inserisci i tuoi dati</h2>
+      <!--
+        CONFIGURAZIONE ZOHO FORMS:
+        Settings → Thankyou Page → Redirect To → Website
+        URL: https://fdossiplax.github.io/plax-card-slim/
+        Spunta: "Prefill values in website URL"
+        Zoho aggiungerà automaticamente i valori nell'URL
+      -->
+      <iframe
+        class="zoho-iframe"
+        aria-label="Tracking Inserimento Dati Firma Aziendale"
+        src="https://forms.zohopublic.com/plaxgroup/form/FormDatiFirmaAziendale/formperma/QBKFOolCfIR3AkIkUkE8Cqr67MGbhqHRWr_CxQxS8dI">
+      </iframe>
+    </div>
+  </div>
+
+  <!-- ══ VISTA 2: DOWNLOAD PNG ══ -->
+  <div id="view-download">
+    <div class="download-card">
+      <div class="download-icon">✅</div>
+      <h2>Firma pronta!</h2>
+      <div class="auto-badge">⬇️ Download automatico in corso…</div>
+      <p class="subtitle">Il file PNG è stato scaricato automaticamente.<br>Puoi anche cliccare il bottone qui sotto.</p>
+
+      <div class="user-info" id="user-info"></div>
+
+      <div class="preview-wrap">
+        <canvas id="preview" width="1250" height="313"></canvas>
+      </div>
+
+      <button class="btn-download" id="btn-dl" onclick="downloadPNG()">
+        ⬇️ Scarica firma PNG
+      </button>
+      <button class="btn-new" onclick="nuovaFirma()">
+        ↩ Genera un'altra firma
+      </button>
+    </div>
+  </div>
+
+  <div class="footer">Plax Group — plax.it</div>
+
+  <script>
+    // ─── Mappa sedi → PNG ──────────────────────────────────────────────────────
+    const SEDI = {
+      trezzo:  { label: "Trezzo sull'Adda (MI) · Italy", file: "card-bg-trezzo.png"  },
+      loreto:  { label: "Loreto (AN) · Italy",           file: "card-bg-loreto.png"  },
+      bologna: { label: "Bologna · Italy",               file: "card-bg-bologna.png" },
+      arad:    { label: "Arad · Romania",                file: "card-bg-arad.png"    },
+      suzhou:  { label: "Suzhou · China",                file: "card-bg-suzhou.png"  },
+    };
+
+    // ─── Legge parametri URL ───────────────────────────────────────────────────
+    // Zoho Forms con "Prefill values" passa i valori come:
+    // ?SingleLine=Sara+Bindi&SingleLine1=Account+Manager&SingleLine2=trezzo&...
+    // Oppure come parametri custom se configurato manualmente
+    const params = new URLSearchParams(window.location.search);
+
+    // Supporta entrambi i formati: Zoho (SingleLine) e custom (nome)
+    function getParam(zohoKey, customKey) {
+      return decodeURIComponent(
+        params.get(zohoKey) || params.get(customKey) || ''
+      ).replace(/\+/g, ' ');
+    }
+
+    const d = {
+      nome:   getParam('SingleLine',  'nome'),
+      ruolo:  getParam('SingleLine1', 'ruolo'),
+      sede:   getParam('SingleLine2', 'sede'),
+      mobile: getParam('SingleLine3', 'mobile'),
+      email:  getParam('SingleLine4', 'email'),
+    };
+
+    const fromZoho = d.nome || d.email;
+    let currentBg = null;
+
+    if (fromZoho) {
+      // ── Mostra vista download ──
+      document.getElementById('view-form').style.display     = 'none';
+      document.getElementById('view-download').style.display = 'block';
+      document.getElementById('page-title').textContent      = 'La tua firma è pronta!';
+      document.getElementById('page-sub').textContent        = 'Scarica il PNG e usalo come firma email';
+
+      // Riepilogo dati
+      const sedeLabel = SEDI[d.sede]?.label || d.sede;
+      document.getElementById('user-info').innerHTML = `
+        ${d.nome   ? `<div><strong>Nome</strong> ${d.nome}</div>`        : ''}
+        ${d.ruolo  ? `<div><strong>Ruolo</strong> ${d.ruolo}</div>`      : ''}
+        ${sedeLabel? `<div><strong>Sede</strong> ${sedeLabel}</div>`     : ''}
+        ${d.mobile ? `<div><strong>Mobile</strong> ${d.mobile}</div>`    : ''}
+        ${d.email  ? `<div><strong>Email</strong> ${d.email}</div>`      : ''}
+      `;
+
+      // Carica sfondo e avvia
+      if (d.sede && SEDI[d.sede]) {
+        const img = new Image();
+        img.onload  = () => { currentBg = img; avviaGenerazione(); };
+        img.onerror = () => { avviaGenerazione(); };
+        img.src = SEDI[d.sede].file;
+      } else {
+        avviaGenerazione();
+      }
+    }
+
+    function avviaGenerazione() {
+      document.fonts.ready.then(() => {
+        renderPreview();
+        // Download automatico dopo 800ms
+        setTimeout(() => {
+          downloadPNG(true);
+          document.querySelector('.auto-badge').textContent = '✅ Download completato!';
+          document.querySelector('.auto-badge').style.background = '#e8f5e9';
+        }, 800);
+      });
+    }
+
+    // ─── Canvas ────────────────────────────────────────────────────────────────
+    function drawCard(ctx, W, H) {
+      if (currentBg && currentBg.naturalWidth > 0) {
+        ctx.drawImage(currentBg, 0, 0, W, H);
+      } else {
+        ctx.fillStyle = '#1a3f6f'; ctx.fillRect(0, 0, W * 0.462, H);
+        ctx.fillStyle = '#eef0f4'; ctx.fillRect(W * 0.462, 0, W * 0.538, H);
+        ctx.fillStyle = '#fdc400'; ctx.fillRect(0, 0, Math.round(W * 0.005), H);
+      }
+
+      const scaleX = W / 1250, scaleY = H / 313;
+      const X       = Math.round(35 * scaleX);
+      const MAX_W   = Math.round(1250 * 0.462 * scaleX) - X - Math.round(25 * scaleX);
+
+      const fNome    = Math.round(38 * scaleY), fNomeMin = Math.round(20 * scaleY);
+      const fRuolo   = Math.round(33 * scaleY), fRuoloMin= Math.round(14 * scaleY);
+      const fSmall   = Math.round(34 * scaleY);
+      const yNome    = Math.round(75  * scaleY);
+      const yRuolo   = Math.round(117 * scaleY);
+      const yMobile  = Math.round(224 * scaleY);
+      const yEmail   = Math.round(271 * scaleY);
+
+      if (d.nome) {
+        let fs = fNome;
+        ctx.font = 'bold ' + fs + 'px "Assistant", Arial, sans-serif';
+        while (ctx.measureText(d.nome).width > MAX_W && fs > fNomeMin) { fs--; ctx.font = 'bold ' + fs + 'px "Assistant", Arial, sans-serif'; }
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText(d.nome, X, yNome);
+      }
+      if (d.ruolo) {
+        let fs = fRuolo;
+        ctx.font = fs + 'px "Assistant", Arial, sans-serif';
+        while (ctx.measureText(d.ruolo).width > MAX_W && fs > fRuoloMin) { fs--; ctx.font = fs + 'px "Assistant", Arial, sans-serif'; }
+        ctx.fillStyle = '#fdc400';
+        ctx.fillText(d.ruolo, X, yRuolo);
+      }
+      if (d.mobile) {
+        ctx.font = fSmall + 'px "Assistant", Arial, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        let mob = 'Mobile: ' + d.mobile;
+        while (ctx.measureText(mob).width > MAX_W && mob.length > 10) mob = mob.slice(0,-1);
+        ctx.fillText(mob, X, yMobile);
+      }
+      if (d.email) {
+        ctx.font = fSmall + 'px "Assistant", Arial, sans-serif';
+        ctx.fillStyle = '#ffffff';
+        let em = 'Email: ' + d.email;
+        while (ctx.measureText(em).width > MAX_W && em.length > 10) em = em.slice(0,-1);
+        ctx.fillText(em, X, yEmail);
+      }
+    }
+
+    function renderPreview() {
+      const c = document.getElementById('preview');
+      const ctx = c.getContext('2d');
+      c.width = 1250; c.height = 313;
+      drawCard(ctx, 1250, 313);
+    }
+
+    function downloadPNG(auto = false) {
+      const btn = document.getElementById('btn-dl');
+      if (!auto) { btn.textContent = 'Generazione in corso…'; btn.classList.add('loading'); }
+
+      const off = document.createElement('canvas');
+      off.width = 2500; off.height = 626;
+      const ctx = off.getContext('2d');
+      ctx.scale(2, 2);
+      drawCard(ctx, 1250, 313);
+
+      const link = document.createElement('a');
+      link.download = 'firma_' + (d.nome || 'plax').replace(/\s+/g, '_') + '.png';
+      link.href = off.toDataURL('image/png');
+      link.click();
+
+      setTimeout(() => {
+        btn.textContent = '⬇️ Scarica firma PNG';
+        btn.classList.remove('loading');
+      }, 1000);
+    }
+
+    function nuovaFirma() {
+      window.location.href = window.location.pathname;
+    }
+  </script>
+
+</body>
+</html>
