@@ -154,6 +154,40 @@
       suzhou:  { label: "Suzhou · China",                file: "card-bg-suzhou.png"  },
     };
 
+    // Mappa valori ESATTI dropdown Zoho → chiave sede
+    const SEDE_MAP = {
+      // Valori esatti dal dropdown Zoho Forms
+      "Trezzo sull'Adda (MI) — Italy": 'trezzo',
+      "Loreto (AN) — Italy":           'loreto',
+      "Bologna — Italy":               'bologna',
+      "Arad — Romania":                'arad',
+      "Suzhou — China":                'suzhou',
+      // Fallback chiavi corte
+      'trezzo':  'trezzo',
+      'loreto':  'loreto',
+      'bologna': 'bologna',
+      'arad':    'arad',
+      'suzhou':  'suzhou',
+    };
+
+    function normalizeSede(val) {
+      if (!val) return '';
+      // Prova match diretto
+      if (SEDE_MAP[val]) return SEDE_MAP[val];
+      // Prova case-insensitive
+      const lower = val.toLowerCase();
+      for (const [k, v] of Object.entries(SEDE_MAP)) {
+        if (k.toLowerCase() === lower) return v;
+      }
+      // Prova se contiene la parola chiave
+      if (lower.includes('trezzo'))  return 'trezzo';
+      if (lower.includes('loreto'))  return 'loreto';
+      if (lower.includes('bologna')) return 'bologna';
+      if (lower.includes('arad'))    return 'arad';
+      if (lower.includes('suzhou'))  return 'suzhou';
+      return val; // fallback: ritorna il valore originale
+    }
+
     // ─── Legge parametri URL da Zoho Forms ────────────────────────────────────
     // Zoho Forms con "Prefill values in website URL" passa i valori come:
     // ?SingleLine=Sara+Bindi&SingleLine1=Account+Manager&SingleLine2=trezzo&...
@@ -173,7 +207,7 @@
       // Supporta: label Zoho ("Nome Completo"), field name ("SingleLine"), custom ("nome")
       nome:   getParam('Nome Completo',        'SingleLine',  'nome'),
       ruolo:  getParam('Posizione Lavorativa', 'SingleLine1', 'ruolo'),
-      sede:   getParam('Sede',                 'SingleLine2', 'sede'),
+      sede:   normalizeSede(getParam('Sede', 'SingleLine2', 'sede')),
       mobile: getParam('Mobile',               'SingleLine3', 'mobile'),
       email:  getParam('Email',                'SingleLine4', 'email'),
     };
