@@ -159,17 +159,23 @@
     // ?SingleLine=Sara+Bindi&SingleLine1=Account+Manager&SingleLine2=trezzo&...
     const params = new URLSearchParams(window.location.search);
 
-    function getParam(zohoKey, fallback) {
-      const val = params.get(zohoKey) || params.get(fallback) || '';
-      return decodeURIComponent(val.replace(/\+/g, ' ')).trim();
+    function getParam(...keys) {
+      for (const key of keys) {
+        const val = params.get(key);
+        if (val !== null && val !== '') {
+          return decodeURIComponent(val.replace(/\+/g, ' ')).trim();
+        }
+      }
+      return '';
     }
 
     const d = {
-      nome:   getParam('SingleLine',  'nome'),
-      ruolo:  getParam('SingleLine1', 'ruolo'),
-      sede:   getParam('SingleLine2', 'sede'),
-      mobile: getParam('SingleLine3', 'mobile'),
-      email:  getParam('SingleLine4', 'email'),
+      // Supporta: label Zoho ("Nome Completo"), field name ("SingleLine"), custom ("nome")
+      nome:   getParam('Nome Completo',        'SingleLine',  'nome'),
+      ruolo:  getParam('Posizione Lavorativa', 'SingleLine1', 'ruolo'),
+      sede:   getParam('Sede',                 'SingleLine2', 'sede'),
+      mobile: getParam('Mobile',               'SingleLine3', 'mobile'),
+      email:  getParam('Email',                'SingleLine4', 'email'),
     };
 
     let currentBg = null;
