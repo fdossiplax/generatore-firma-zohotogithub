@@ -197,7 +197,10 @@
       for (const key of keys) {
         const val = params.get(key);
         if (val !== null && val !== '') {
-          return decodeURIComponent(val.replace(/\+/g, ' ')).trim();
+          // Prima decodifica %2B → + poi sostituisci + rimasti (spazi) con spazio
+          const decoded = decodeURIComponent(val);
+          // Sostituisce + solo se NON preceduto da cifra (evita di toccare +39)
+          return decoded.replace(/(?<!\d)\+(?!\d)/g, ' ').trim();
         }
       }
       return '';
